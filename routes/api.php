@@ -20,8 +20,10 @@ Route::controller(MateriaController::class)->group(function(){
     Route::post('busquedaGradoGrupoTurno', 'busquedaGradoGrupoTurno');
 });
 
-Route::resource('alumno', AlumnoController::class);
-
+Route::controller(AlumnoController::class)->group(function(){
+    Route::resource('alumno', AlumnoController::class);
+    Route::post('alumnoBybusquedaGradoGrupoTurno', 'alumnoBybusquedaGradoGrupoTurno');
+});
 /*
 Route::controller(AlumnoController::class)->group(function(){
     Route::resource('alumnos', AlumnoController::class);

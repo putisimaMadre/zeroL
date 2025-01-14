@@ -32,38 +32,70 @@ class MateriaController extends Controller
     public function store(Request $request)
     {
         $materia = Materia::create($request->all());
-        return $materia->http_response_code;
+        
+        $materias = DB::table("materias")
+            ->where("grado", $request->grado)
+            ->where("grupo", $request->grupo)
+            ->where("turno", $request->turno)
+            ->get();
+
+        $alumnos = DB::table("alumnos")
+            ->where("grado", $request->grado)
+            ->where("grupo", $request->grupo)
+            ->where("turno", $request->turno)
+            ->get();
+            
+        //Para los que ya estan
+        foreach($materias as $materia){
+            foreach($alumnos as $alumno){
+                $alumnoMateria = new AlumnoMateria();
+                $alumnoMateria->idAlumno = $alumno->id; 
+                $alumnoMateria->idMateria = $materia->id;
+                $existenAlumnosMaterias = DB::table("alumno_materias")
+                    ->where("idAlumno", $alumno->id)
+                    ->where("idMateria", $materia->id)
+                    ->get();
+                    if($existenAlumnosMaterias->isEmpty()){
+                        $alumnoMateria->save();
+                    }
+            }
+        }
+        return $materia;
     }
 
+    /** 
+     * Se le tiene que enviar una model de Alumno 
+     * id
+     * grado 
+     * grupo 
+     * turno
+    */
     public function busquedaGradoGrupoTurno(Request $request)
     {
-        $materias = DB::table('materias')
+        $materias = DB::table('materias')   // 1, a
             //->select(['grado', 'grupo'])
             ->where('grado', $request->grado)
             ->where('grupo', $request->grupo)
             ->where('turno', $request->turno)
             ->get();
-        
-        /*$alumnos = DB::table('alumnos')
-            ->select(['id', 'nombres'])
-            ->where('grado', $asignatura->grado)
-            ->where('grupo', $asignatura->grupo)
-            ->get();*/
-//        return $alumnos;
-        
-        foreach ($materias as $materia) {
-            $alumnoMaterias = new AlumnoMateria();
-            //$aa = new AlumnoActividad;
-            $alumnoMaterias->idMateria = $materia->id;
-            $alumnoMaterias->idAlumno = $request->id;
-            /*$aa->idAlumno = $alumno->id;
-            $aa->idActividad = $request->id;
-            $aa->calificacion = 0;
-            $aa->comentario = "";
-            $aa->status = 1;*/
-            $alumnoMaterias->save();
-        }
-        return $materias;
+
+            foreach ($materias as $materia) {
+                $alumnoMaterias = new AlumnoMateria();
+                $alumnoMaterias->idAlumno = $request->id;
+                $alumnoMaterias->idMateria = $materia->id;
+                $alumnoMateria = AlumnoMateria::where("idMateria", $materia->id)
+                ->where("idAlumno", $request->id)->get();
+              echo($alumnoMateria)  ;
+            //echo(empty($alumnoMateria));
+            /*if($alumnoMateria->count()){
+                $alumnoMaterias->save();
+                return $materia->id;
+                //echo($alumnoMaterias);
+            }*/
+            //Guarda el id del alumno y la materia en la tabla de alumnoMaterias
+            //$alumnoMaterias->save();
+        } //======>for
+        //return $alumnoMaterias;
     }
 
     /**
